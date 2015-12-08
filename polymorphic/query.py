@@ -294,16 +294,22 @@ class PolymorphicQuerySet(QuerySet):
         while True:
             base_result_objects = []
             reached_end = False
+            ids_only = False
 
             for i in range(Polymorphic_QuerySet_objects_per_request):
                 try:
                     o = next(base_iter)
+                    if isinstance(o, long):
+                        ids_only = True
                     base_result_objects.append(o)
                 except StopIteration:
                     reached_end = True
                     break
 
-            real_results = self._get_real_instances(base_result_objects)
+            if ids_only:
+                real_results = base_result_objects
+            else:
+                real_results = self._get_real_instances(base_result_objects)
 
             for o in real_results:
                 yield o
